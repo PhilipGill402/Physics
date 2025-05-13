@@ -10,9 +10,11 @@ pygame.init()
 surface = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Bouncy Ball")
 running = True
-bouncyBall = Ball(100.0,100.0,10.0, 0.5)
-# g = -5
-gravity = bouncyBall.mass * 5
+bouncyBall = Ball(100.0,HEIGHT-50-10.0,10.0)
+bouncyBall2 = Ball(200.0,HEIGHT-50-10.0,10.0)
+#ball = Ball(100.0, 150.0, 10.0)
+# g = -2
+gravity = bouncyBall.mass * GRAVITY 
 
 while running:
     surface.fill(BLACK)
@@ -23,8 +25,7 @@ while running:
             running = False
         if ev.type == pygame.KEYDOWN:
             if ev.key == pygame.K_SPACE:
-                bouncyBall.addForce(0,gravity)
-    print(bouncyBall.velocity) 
+                bouncyBall.velocity[0] += 10
     bouncyBall.update(surface, WHITE)
     pygame.display.update()
     time.sleep(0.025)
