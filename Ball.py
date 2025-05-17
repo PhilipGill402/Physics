@@ -1,67 +1,101 @@
+from __future__ import annotations
 from Constants import *
+from Object import *
+from AABB import *
 import numpy as np
 import pygame
+import math
 
-class Ball:
-    def __init__(self, x:float, y:float, mass:float, bounciness:float=0):
-        self.mass = mass
-        self.position = np.array([x, y])
-        self.velocity = np.array([0.0,0.0])
-        self.acceleration = np.array([0.0,0.0])
-        self.bounciness = bounciness
+class Ball(Object):
+    def __init__(self, x:float, y:float, radius:float, velocity:np.array, mass:float, restitution:float, color:tuple):
+        super().__init__(x, y, velocity, mass, restitution, color)
+        self.radius = radius
 
-    def addForce(self, forceX:int=0, forceY:int=0):
-        self.acceleration[0] += (forceX/self.mass)
-        self.acceleration[1] += (forceY/self.mass)
+    def __distance(self, object:Object):
+        dx = self.x - object.x 
+        dy = self.y - object.y 
+        distance = math.sqrt(dx**2 + dy**2)
+        return distance 
 
-    def collidesWithLeftBoundary(self) -> bool:
-        if self.position[0] < 0:
+    def collidesWithBall(self, object:Ball):
+        distance = self.__distance(object)
+        if distance < (self.radius + object.radius):
             return True
         return False
 
-    def collidesWithRightBoundary(self) -> bool:
-        if self.position[0] > WIDTH:
-            return True
-        return False
-
-    def collidesWithFloor(self) -> bool:
-        if self.position[1] > HEIGHT - 50:
-            return True
-        return False
-    
-    def collidesWithRoof(self) -> bool:
-        if self.position[1] < 0:
-            return True
-        return False
-    
-    def drawBall(self, surface, color:tuple):
-        pygame.draw.circle(surface, color, (self.position[0], self.position[1]), self.mass)
-    
-    def updateVelocity(self):
-        self.velocity += self.acceleration
-    
-    def updatePosition(self):
-        self.position += self.velocity 
-
-    def collide(self):
-        if self.collidesWithFloor():
-            self.addForce(0, -1 * self.mass * GRAVITY) #normal force 
-
-        if self.collidesWithRoof():
-            self.position[1] = 0
-            self.velocity *= -1 
+    def collidesWithAABB(self, object:AABB):
+        closest = np.maximum(object.min, np.minimum(self.position, object.max))
+        difference = self.position - closest
         
-        if self.collidesWithLeftBoundary():
-            self.position[0] = 0
-            self.velocity *= -1
+        if np.dot(difference, difference) < self.radius ** 2:
+            return True
+        return False
+    
+    def resolveBallCollision(self, object:Ball):
+        if self.invMass + object.invMass == 0:
+            return None
+
+        n = self.position - object.position
+        distance = self.__distance(object)
+        radiusSum = self.radius + object.radius
+
+        if distance == 0:
+            normal = np.array([1.0,0.0])
+            penetration = self.radius
+        else:
+            normal = n / distance
+            penetration = radiusSum - distance
+
+        super().resolveCollision(penetration, normal, object)
+
         
-        if self.collidesWithRightBoundary():
-            self.position[0] = WIDTH
-            self.velocity *= -1
-             
-    def update(self, surface, color:tuple):
-        self.updateVelocity()
-        self.updatePosition()
-        self.collide()
-        self.drawBall(surface, color)
-        self.addForce(0, self.mass * GRAVITY)
+    
+    def resolveAABBCollision(self, object:AABB):
+        #checks if both objects are immovable
+        if self.invMass + object.invMass == 0:
+            return None
+
+        #manifold generation
+        closest = np.maximum(object.min, np.minimum(self.position, object.max))
+        difference = self.position - closest
+        differenceSquared = np.dot(difference, difference)
+        distance = np.sqrt(differenceSquared)
+
+        if distance != 0:
+            normal = difference / distance
+            penetration = self.radius - distance
+        else:
+            center = (object.max + object.min) / 2
+            dx = self.position[0] - center[0]
+            dy = self.position[1] - center[1]
+
+            if abs(dx) > abs(dy):
+                if dx > 0: 
+                    normal = np.array([1.0,0.0])
+                else:
+                    normal = np.array([-1.0,0.0])
+                penetration = self.radius + (object.max[0] - object.min[0]) / 2 - abs(dx)
+
+            else:
+                if dy > 0:
+                    normal = np.array([0.0,1.0])
+                else:
+                    normal = np.array([0.0,-1.0])
+                penetration = self.radius + (object.max[1] - object.min[1]) / 2 - abs(dy)
+
+        super().resolveCollision(penetration, normal, object) 
+    
+    def draw(self, surface):
+        pygame.draw.circle(surface, self.color, (self.position[0], self.position[1]), self.radius)
+
+    def addForce(self, forceX, forceY):
+        return super().addForce(forceX, forceY)
+    
+    def update(self):
+        super().velocityVerlet(DT)
+        self.x = self.position[0]
+        self.y = self.position[1]
+        
+        #makes small velocities 0
+        if np.linalg.norm(self.velocity) < 0.01:
+            self.velocity = np.array([0.0, 0.0])

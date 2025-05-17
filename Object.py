@@ -1,3 +1,4 @@
+from __future__ import annotations
 import numpy as np
 from Constants import *
 
@@ -16,7 +17,38 @@ class Object:
         else:
             self.invMass = 1 / self.mass
 
+    def resolveCollision(self, penetration:float, normal:np.array, object:Object):
+        #finding values needed to calculate the impulse
+        relativeVelocity = object.velocity -  self.velocity
+        e = min(self.restitution, object.restitution)
+        velocityAlongNormal = np.dot(relativeVelocity, normal)
+         
+        #checks if objects are separating
+        #if so, then no collision resolution is needed 
+        if velocityAlongNormal < 0:
+            return None 
+
+        #calculating impulse scalar
+        j = -1 * (1 + e) * (velocityAlongNormal / ((self.invMass) + (object.invMass)))
         
+        #impulse
+        impulse = j * normal
+        self.velocity -= self.invMass * impulse
+        object.velocity += object.invMass * impulse
+
+        #positional correction
+        percent = 0.1
+        slop = 0.05
+        correctionMagnitude = max(penetration - slop, 0.0) / (self.invMass + object.invMass) * percent
+        correction = correctionMagnitude * normal
+        self.x -= correction[0] * self.invMass 
+        self.y -= correction[1] * self.invMass 
+        object.x += correction[0] * object.invMass 
+        object.y += correction[1] * object.invMass
+
+        self.position = np.array([self.x, self.y])
+        object.position = np.array([object.x, object.y])
+
     def velocityVerlet(self, dt):
         #makes sure that the object stays above the floor 
         if self.position[1] <= HEIGHT:
@@ -31,6 +63,4 @@ class Object:
         self.acceleration[1] += forceY / self.mass
 
 
-    def update(self):
-       self.velocityVerlet(0.001)
         

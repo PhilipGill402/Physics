@@ -2,6 +2,7 @@ from __future__ import annotations
 import numpy as np
 import math
 from Object import *
+from Ball import Ball
 import pygame
 
 class AABB(Object):
@@ -17,10 +18,15 @@ class AABB(Object):
             return False 
         if (self.max[1] < object.min[1] or self.min[1] > object.max[1]):
             return False
-        return True 
+        return True
     
-    def draw(self, surface):
-        pygame.draw.rect(surface, self.color, pygame.Rect(self.position[0], self.position[1], self.width, self.height))
+    def collidesWithBall(self, object:Ball):
+        closest = np.maximum(self.min, np.minimum(object.position, self.max))
+        difference = object.position - closest
+        
+        if np.dot(difference, difference) < object.radius ** 2:
+            return True
+        return False
 
     def resolveAABBCollision(self, object: AABB):
         if not self.collidesWithAABB(object):
@@ -47,33 +53,49 @@ class AABB(Object):
             else:
                 normal = np.array([0, 1])
 
-        #finding values needed to calculate the impulse
-        relativeVelocity = object.velocity -  self.velocity
-        e = min(self.restitution, object.restitution)
-        velocityAlongNormal = np.dot(relativeVelocity, normal)
-        
-        #checks if objects are separating
-        #if so, then no collision resolution is needed 
-        if velocityAlongNormal < 0:
-            return None 
+        super().resolveCollision(penetration, normal, object)
 
-        #calculating impulse scalar
-        j = -1 * (1 + e) * (velocityAlongNormal / ((self.invMass) + (object.invMass)))
-        
-        #impulse
-        impulse = j * normal
-        self.velocity -= self.invMass * impulse
-        object.velocity += object.invMass * impulse
+    def resolveBallCollision(self, object:Ball):
+        #checks if both objects are immovable
+        if self.invMass + object.invMass == 0:
+            return None
 
-        #positional correction
-        percent = 0.1
-        slop = 0.05
-        correctionMagnitude = max(penetration - slop, 0.0) / (self.invMass + object.invMass) * percent
-        correction = correctionMagnitude * normal
-        self.x -= correction[0] * self.invMass 
-        self.y -= correction[1] * self.invMass 
-        object.x += correction[0] * object.invMass 
-        object.y += correction[1] * object.invMass
+        #manifold generation
+        closest = np.maximum(self.min, np.minimum(object.position, self.max))
+        print(closest)
+        difference = self.position - closest
+        differenceSquared = np.dot(difference, difference)
+        distance = np.sqrt(differenceSquared)
+
+        if distance != 0:
+            normal = difference / distance
+            print(difference)
+            print(distance)
+            print(normal)
+            penetration = max(object.radius - distance, 0.0)
+        else:
+            center = (self.max + self.min) / 2
+            dx = object.position[0] - center[0]
+            dy = object.position[1] - center[1]
+
+            if abs(dx) > abs(dy):
+                if dx > 0:
+                    normal = np.array([1.0,0.0])
+                else:
+                    normal = np.array([-1.0,0.0])
+                penetration = object.radius + (self.max[0] - self.min[0]) / 2 - abs(dx)
+
+            else:
+                if dy > 0:
+                    normal = np.array([0.0,1.0])
+                else:
+                    normal = np.array([0.0,-1.0])
+                penetration = object.radius + (self.max[1] - self.min[1]) / 2 - abs(dy)
+
+        super().resolveCollision(penetration, normal, object)
+    
+    def draw(self, surface):
+        pygame.draw.rect(surface, self.color, pygame.Rect(self.position[0], self.position[1], self.width, self.height))
 
     def addForce(self, forceX:int, forceY:int):
         return super().addForce(forceX, forceY)
