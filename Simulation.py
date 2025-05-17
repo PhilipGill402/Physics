@@ -9,17 +9,27 @@ from AABB import *
 pygame.init()
 surface = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Simulation")
+clock = pygame.time.Clock()
 running = True
 
-square = AABB(100.0, HEIGHT - 50, 50, 50, np.array([0.0,0.0]), 10, 0.5, WHITE)
-anotherSquare = AABB(500.0, HEIGHT - 50, 50, 50, np.array([0.0,0.0]), 10, 0.5, WHITE)
+square = AABB(100.0, HEIGHT - 50, 50, 50, np.array([0.0,0.0]), 10, 1.0, WHITE)
+anotherSquare = AABB(500.0, HEIGHT - 50, 50, 50, np.array([0.0,0.0]), 10, 1.0, WHITE)
 
-topBorder = AABB(0.0, 0.0, WIDTH, 1.0, np.array([0,0]), 0.0, 1.0, WHITE)
-bottomBorder = AABB(0.0, HEIGHT, WIDTH, 1.0, np.array([0,0]), 0.0, 1.0, WHITE)
-leftBorder = AABB(0.0, 0.0, 1.0, HEIGHT, np.array([0,0]), 0.0, 1.0, WHITE)
-rightBorder = AABB(WIDTH, 0.0, 1.0, HEIGHT, np.array([0,0]), 0.0, 1.0, WHITE)
+topBorder = AABB(0.0, 0.0, WIDTH, 1.0, np.array([0.0,0.0]), 0.0, 1.0, WHITE)
+bottomBorder = AABB(0.0, HEIGHT, WIDTH, 1.0, np.array([0.0,0.0]), 0.0, 1.0, WHITE)
+leftBorder = AABB(0.0, 0.0, 10.0, HEIGHT, np.array([0.0,0.0]), 0.0, 1.0, WHITE)
+rightBorder = AABB(WIDTH-10.0, 0.0, 10.0, HEIGHT, np.array([0.0,0.0]), 0.0, 1.0, WHITE)
+
+objectList = []
+objectList.append(topBorder)
+objectList.append(bottomBorder) 
+objectList.append(leftBorder)
+objectList.append(rightBorder)
+objectList.append(square)
+objectList.append(anotherSquare)
 
 while running:
+    clock.tick(1 / DT)
     surface.fill(BLACK)
     x, y = pygame.mouse.get_pos()
     #print(x,y) 
@@ -28,16 +38,19 @@ while running:
             running = False
         if ev.type == pygame.KEYDOWN:
             if ev.key == pygame.K_SPACE:
-                square.acceleration[0] = 10
-                anotherSquare.acceleration[0] = -10
-    
-    square.draw(surface)
-    anotherSquare.draw(surface)
+                square.velocity[0] = 50 
+                anotherSquare.velocity[0] = -50
+
+    for i in objectList:
+        i.draw(surface)
+
     square.update()
-    anotherSquare.update() 
+    anotherSquare.update()
     if square.collidesWithAABB(anotherSquare):
         square.resolveAABBCollision(anotherSquare)
-       #print(square.velocity)
-       #print(anotherSquare.velocity) 
+    
+    if square.collidesWithAABB(leftBorder):
+        square.resolveAABBCollision(leftBorder)
     pygame.display.update()
+
 pygame.quit()

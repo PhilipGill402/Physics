@@ -3,4 +3,4 @@ HEIGHT = 600
 BLACK = (0,0,0)
 WHITE = (255,255,255)
 GRAVITY = 2
-DT = 0.001
+DT = 1 / 60 

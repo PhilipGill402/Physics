@@ -16,7 +16,7 @@ class AABB(Object):
         if (self.max[0] < object.min[0] or self.min[0] > object.max[0]):
             return False 
         if (self.max[1] < object.min[1] or self.min[1] > object.max[1]):
-            return False 
+            return False
         return True 
     
     def draw(self, surface):
@@ -27,8 +27,8 @@ class AABB(Object):
             return None
         
         #Manifold Generation
-        overlapX = min(self.x, object.x) - max(self.x, object.x)
-        overlapY = min(self.y, object.y) - max(self.y, object.y)
+        overlapX = min(self.max[0], object.max[0]) - max(self.min[0], object.min[0])
+        overlapY = min(self.max[1], object.max[1]) - max(self.min[1], object.min[1]) 
 
         if overlapX < overlapY:
             penetration = overlapX
@@ -44,62 +44,44 @@ class AABB(Object):
                 normal = np.array([0, 1])
 
         #finding values needed to calculate the impulse
-        relativeVelocity = self.velocity -  object.velocity
+        relativeVelocity = object.velocity -  self.velocity
         e = min(self.restitution, object.restitution)
         velocityAlongNormal = np.dot(relativeVelocity, normal)
-
+        
         #checks if objects are separating
         #if so, then no collision resolution is needed 
-        if velocityAlongNormal > 0:
+        if velocityAlongNormal < 0:
             return None 
 
         #calculating impulse scalar
-        j = -1 * (1 + e) * relativeVelocity * velocityAlongNormal
-        j /= (self.invMass) + (object.invMass)
-
+        j = -1 * (1 + e) * (velocityAlongNormal / ((self.invMass) + (object.invMass)))
+        
         #impulse
         impulse = j * normal
-        self.velocity -= (1 / self.mass) * impulse
-        object.velocity += (1 / object.mass) * impulse
+        self.velocity -= self.invMass * impulse
+        object.velocity += object.invMass * impulse
 
         #positional correction
-        percent = 0.2
-        slop = 0.01
-        correctionMagnitude = max(penetration - slop, 0.0) / ((1 / self.mass) + (1 / object.mass)) * percent
+        percent = 0.1
+        slop = 0.05
+        correctionMagnitude = max(penetration - slop, 0.0) / (self.invMass + object.invMass) * percent
         correction = correctionMagnitude * normal
-        self.x -= correction[0] * (1 / self.mass)
-        self.y -= correction[1] * (1 / self.mass)
-        object.x += correction[0] * (1 / object.mass)
-        object.y += correction[1] * (1 / object.mass)
+        self.x -= correction[0] * self.invMass 
+        self.y -= correction[1] * self.invMass 
+        object.x += correction[0] * object.invMass 
+        object.y += correction[1] * object.invMass
 
-    def resolveCollision(self, object:Object):
-        #finding the normal vector
-        dx = object.x - self.x
-        dy = object.y - self.y
-        magnitude = math.sqrt((dx * dx) + (dy * dy))
-        normal = np.array([dx / magnitude, dy / magnitude])
-
-        #finding values needed to calculate the impulse
-        relativeVelocity = self.velocity -  object.velocity
-        e = min(self.restitution, object.restitution)
-        velocityAlongNormal = np.dot(relativeVelocity, normal)
-
-        #checks if objects are separating
-        #if so, then no collision resolution is needed 
-        if velocityAlongNormal > 0:
-            return None 
-
-        #calculating impulse scalar
-        j = -1 * (1 + e) * relativeVelocity * velocityAlongNormal
-        j /= (self.invMass) + (object.invMass)
-
-        #impulse
-        impulse = j * normal
-        self.velocity -= (1 / self.mass) * impulse
-        object.velocity += (1 / object.mass) * impulse
-    
     def addForce(self, forceX:int, forceY:int):
         return super().addForce(forceX, forceY)
 
     def update(self):
-        return super().velocityVerlet(DT) 
+        super().velocityVerlet(DT)
+        self.x = self.position[0]
+        self.y = self.position[1] 
+        self.min = np.array([self.x, self.y])
+        self.max = np.array([self.x + self.width, self.y + self.height])
+
+        #makes small velocities 0
+        if np.linalg.norm(self.velocity) < 0.01:
+            self.velocity = np.array([0.0, 0.0])
+ 
