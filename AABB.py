@@ -25,7 +25,11 @@ class AABB(Object):
     def resolveAABBCollision(self, object: AABB):
         if not self.collidesWithAABB(object):
             return None
-        
+
+        #checks case if both masses are immovable
+        if self.invMass + object.invMass == 0:
+            return None
+
         #Manifold Generation
         overlapX = min(self.max[0], object.max[0]) - max(self.min[0], object.min[0])
         overlapY = min(self.max[1], object.max[1]) - max(self.min[1], object.min[1]) 

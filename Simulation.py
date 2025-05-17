@@ -42,15 +42,14 @@ while running:
                 anotherSquare.velocity[0] = -50
 
     for i in objectList:
-        i.draw(surface)
+        for j in objectList:
+            if (not i == j) and type(i) == AABB and type(j) == AABB:
+                if i.collidesWithAABB(j):
+                    i.resolveAABBCollision(j)
 
-    square.update()
-    anotherSquare.update()
-    if square.collidesWithAABB(anotherSquare):
-        square.resolveAABBCollision(anotherSquare)
+        i.draw(surface)
+        i.update()
     
-    if square.collidesWithAABB(leftBorder):
-        square.resolveAABBCollision(leftBorder)
     pygame.display.update()
 
 pygame.quit()
