@@ -6,10 +6,15 @@ from Ball import Ball
 import pygame
 
 class AABB(Object):
-    def __init__(self, x:int, y:int, width:int, height: int, velocity:np.array, mass:float, restitution:float, color:tuple):
-        super().__init__(x, y, velocity, mass, restitution, color)
+    def __init__(self, x:int, y:int, width:int, height: int, velocity:np.array, density:float, restitution:float, color:tuple):
+        super().__init__(x, y, velocity, density, restitution, color)
         self.width = width
         self.height = height
+        self.mass = density * width * height
+        if self.mass == 0:
+            self.invMass = 0
+        else:
+            self.invMass = 1 / self.mass
         self.max = np.array([x + width, y + height])
         self.min = np.array([x, y])
 

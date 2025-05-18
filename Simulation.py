@@ -15,12 +15,12 @@ running = True
 square = AABB(175.0, HEIGHT - 50, 50, 50, np.array([0.0,0.0]), 10, 1.0, WHITE)
 anotherSquare = AABB(375.0, HEIGHT - 50, 50, 50, np.array([0.0,0.0]), 10, 1.0, WHITE)
 ball = Ball(100.0, HEIGHT - 10, 10, np.array([0.0,0.0]), 10.0, 1.0, WHITE)
-anotherBall = Ball(500.0, HEIGHT - 10, 10, np.array([0.0,0.0]), 10.0, 1.0, WHITE)
+anotherBall = Ball(500.0, HEIGHT - 10, 10, np.array([0.0,0.0]), 50.0, 1.0, WHITE)
 
 topBorder = AABB(0.0, 0.0, WIDTH, 1.0, np.array([0.0,0.0]), 0.0, 1.0, WHITE)
 bottomBorder = AABB(0.0, HEIGHT, WIDTH, 1.0, np.array([0.0,0.0]), 0.0, 1.0, WHITE)
-leftBorder = AABB(0.0, 0.0, 10.0, HEIGHT, np.array([0.0,0.0]), 0.0, 1.0, WHITE)
-rightBorder = AABB(WIDTH-10.0, 0.0, 10.0, HEIGHT, np.array([0.0,0.0]), 0.0, 1.0, WHITE)
+leftBorder = AABB(-10.0, 0.0, 10.0, HEIGHT, np.array([0.0,0.0]), 0.0, 1.0, WHITE)
+rightBorder = AABB(WIDTH, 0.0, 10.0, HEIGHT, np.array([0.0,0.0]), 0.0, 1.0, WHITE)
 
 objectList = []
 objectList.append(topBorder)
@@ -32,11 +32,10 @@ objectList.append(anotherBall)
 objectList.append(square)
 objectList.append(anotherSquare)
 
+
 while running:
     clock.tick(1 / DT)
     surface.fill(BLACK)
-    x, y = pygame.mouse.get_pos()
-    #print(x,y) 
     for ev in pygame.event.get():
         if ev.type == pygame.QUIT:
             running = False
@@ -61,8 +60,7 @@ while running:
             elif type(A) == Ball and type(B) == AABB:
                 if A.collidesWithAABB(B):
                     A.resolveAABBCollision(B)
-
-
+    
         objectList[i].draw(surface)
         objectList[i].update()
     

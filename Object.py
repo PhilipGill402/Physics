@@ -3,21 +3,17 @@ import numpy as np
 from Constants import *
 
 class Object:
-    def __init__(self, x:float, y:float, velocity:np.array, mass:float, restitution:float, color:tuple):
+    def __init__(self, x:float, y:float, velocity:np.array, density:float, restitution:float, color:tuple):
         self.x = x
         self.y = y
         self.position = np.array([x, y])
         self.velocity = velocity
         self.acceleration = np.array([0.0,0.0])
-        self.mass = mass
+        self.density = density 
         self.restitution = restitution
         self.color = color
         self.forces = []
-        if self.mass == 0:
-            self.invMass = 0
-        else:
-            self.invMass = 1 / self.mass
-
+        
     def resolveCollision(self, penetration:float, normal:np.array, object:Object):
         #finding values needed to calculate the impulse
         relativeVelocity = object.velocity -  self.velocity

@@ -7,9 +7,14 @@ import pygame
 import math
 
 class Ball(Object):
-    def __init__(self, x:float, y:float, radius:float, velocity:np.array, mass:float, restitution:float, color:tuple):
-        super().__init__(x, y, velocity, mass, restitution, color)
+    def __init__(self, x:float, y:float, radius:float, velocity:np.array, density:float, restitution:float, color:tuple):
+        super().__init__(x, y, velocity, density, restitution, color)
         self.radius = radius
+        self.mass = .5 * math.pi * radius ** 2 * density
+        if self.mass == 0:
+            self.invMass = 0
+        else:
+            self.invMass = 1 / self.mass
 
     def __distance(self, object:Object):
         dx = self.x - object.x 
