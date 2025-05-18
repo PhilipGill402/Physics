@@ -54,7 +54,6 @@ while running:
                     A.resolveAABBCollision(B)
             elif type(A) == AABB and type(B) == Ball:
                 if A.collidesWithBall(B):
-                    print("Collision")
                     A.resolveBallCollision(B)
             elif type(A) == Ball and type(B) == Ball:
                 if A.collidesWithBall(B):

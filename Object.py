@@ -12,6 +12,7 @@ class Object:
         self.mass = mass
         self.restitution = restitution
         self.color = color
+        self.forces = []
         if self.mass == 0:
             self.invMass = 0
         else:

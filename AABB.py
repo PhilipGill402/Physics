@@ -62,24 +62,20 @@ class AABB(Object):
 
         #manifold generation
         closest = np.maximum(self.min, np.minimum(object.position, self.max))
-        print(closest)
-        difference = self.position - closest
+        difference = object.position - closest
         differenceSquared = np.dot(difference, difference)
         distance = np.sqrt(differenceSquared)
 
         if distance != 0:
             normal = difference / distance
-            print(difference)
-            print(distance)
-            print(normal)
-            penetration = max(object.radius - distance, 0.0)
+            penetration = object.radius - distance
         else:
             center = (self.max + self.min) / 2
             dx = object.position[0] - center[0]
             dy = object.position[1] - center[1]
 
             if abs(dx) > abs(dy):
-                if dx > 0:
+                if dx > 0: 
                     normal = np.array([1.0,0.0])
                 else:
                     normal = np.array([-1.0,0.0])
@@ -92,7 +88,9 @@ class AABB(Object):
                     normal = np.array([0.0,-1.0])
                 penetration = object.radius + (self.max[1] - self.min[1]) / 2 - abs(dy)
 
+        normal *= -1
         super().resolveCollision(penetration, normal, object)
+
     
     def draw(self, surface):
         pygame.draw.rect(surface, self.color, pygame.Rect(self.position[0], self.position[1], self.width, self.height))
