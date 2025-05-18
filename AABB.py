@@ -100,17 +100,15 @@ class AABB(Object):
     def draw(self, surface):
         pygame.draw.rect(surface, self.color, pygame.Rect(self.position[0], self.position[1], self.width, self.height))
 
-    def addForce(self, forceX:int, forceY:int):
-        return super().addForce(forceX, forceY)
-
     def update(self):
         super().velocityVerlet(DT)
         self.x = self.position[0]
-        self.y = self.position[1] 
+        self.y = self.position[1]
         self.min = np.array([self.x, self.y])
         self.max = np.array([self.x + self.width, self.y + self.height])
+        self.acceleration = self.forces * self.invMass
+        self.forces = np.array([0.0,0.0])
 
         #makes small velocities 0
         if np.linalg.norm(self.velocity) < 0.01:
             self.velocity = np.array([0.0, 0.0])
- 

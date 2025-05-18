@@ -12,7 +12,7 @@ class Object:
         self.density = density 
         self.restitution = restitution
         self.color = color
-        self.forces = []
+        self.forces = np.array([0.0,0.0]) 
         
     def resolveCollision(self, penetration:float, normal:np.array, object:Object):
         #finding values needed to calculate the impulse
@@ -55,9 +55,11 @@ class Object:
             self.velocity[0] += self.acceleration[0] * dt
             self.velocity[1] += self.acceleration[1] * dt
         
-    def addForce(self, forceX:float, forceY:float):
-        self.acceleration[0] += forceX / self.mass
-        self.acceleration[1] += forceY / self.mass
+    def addForce(self, force:np.array):
+        self.forces += force
+    
+
+
 
 
         

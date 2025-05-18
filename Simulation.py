@@ -12,10 +12,10 @@ pygame.display.set_caption("Simulation")
 clock = pygame.time.Clock()
 running = True
 
-square = AABB(175.0, HEIGHT - 50, 50, 50, np.array([0.0,0.0]), 10, 1.0, WHITE)
-anotherSquare = AABB(375.0, HEIGHT - 50, 50, 50, np.array([0.0,0.0]), 10, 1.0, WHITE)
-ball = Ball(100.0, HEIGHT - 10, 10, np.array([0.0,0.0]), 10.0, 1.0, WHITE)
-anotherBall = Ball(500.0, HEIGHT - 10, 10, np.array([0.0,0.0]), 50.0, 1.0, WHITE)
+square = AABB(175.0, 100.0, 50, 50, np.array([0.0,0.0]), 10, 0.75, WHITE)
+anotherSquare = AABB(375.0, 100.0, 50, 50, np.array([0.0,0.0]), 10, 0.75, WHITE)
+ball = Ball(100.0, 100.0, 10, np.array([0.0,0.0]), 10.0, 0.75, WHITE)
+anotherBall = Ball(500.0, 100.0, 10, np.array([0.0,0.0]), 50.0, 0.75, WHITE)
 
 topBorder = AABB(0.0, 0.0, WIDTH, 1.0, np.array([0.0,0.0]), 0.0, 1.0, WHITE)
 bottomBorder = AABB(0.0, HEIGHT, WIDTH, 1.0, np.array([0.0,0.0]), 0.0, 1.0, WHITE)
@@ -60,7 +60,9 @@ while running:
             elif type(A) == Ball and type(B) == AABB:
                 if A.collidesWithAABB(B):
                     A.resolveAABBCollision(B)
-    
+
+
+        objectList[i].addForce(np.array([0.0,9.8*objectList[i].mass])) 
         objectList[i].draw(surface)
         objectList[i].update()
     
