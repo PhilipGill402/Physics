@@ -6,7 +6,7 @@ from Ball import Ball
 import pygame
 
 class AABB(Object):
-    def __init__(self, x:int, y:int, width:int, height: int, velocity:np.array, density:float, restitution:float, color:tuple):
+    def __init__(self, x:float, y:float, width:float, height:float, velocity:np.array, density:float, restitution:float, color:tuple):
         super().__init__(x, y, velocity, density, restitution, color)
         self.width = width
         self.height = height
