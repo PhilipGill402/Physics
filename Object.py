@@ -19,7 +19,7 @@ class Object:
         relativeVelocity = object.velocity -  self.velocity
         e = min(self.restitution, object.restitution)
         velocityAlongNormal = np.dot(relativeVelocity, normal)
-         
+        
         #checks if objects are separating
         #if so, then no collision resolution is needed 
         if velocityAlongNormal < 0:

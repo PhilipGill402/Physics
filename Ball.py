@@ -65,7 +65,7 @@ class Ball(Object):
         difference = self.position - closest
         differenceSquared = np.dot(difference, difference)
         distance = np.sqrt(differenceSquared)
-
+        
         if distance != 0:
             normal = difference / distance
             penetration = self.radius - distance
